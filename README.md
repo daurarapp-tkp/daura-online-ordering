@@ -11,6 +11,7 @@ WhatsApp order number: **+977 9744444442**
 - Menu categories and search
 - Cart and quantity controls
 - WhatsApp order confirmation
+- Complete WhatsApp order details: items, quantity, price, total, customer, mobile, order type, payment, address and notes
 - Starter admin dashboard
 - Order status workflow: New → Accepted → Preparing → Ready → Delivered
 
