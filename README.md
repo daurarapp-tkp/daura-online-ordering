@@ -15,6 +15,7 @@ WhatsApp order number: **+977 9744444442**
 - Customer confirmation note: **Your order has been placed and saved in our restaurant system. Please wait for a response/reply from our restaurant. Your order will be confirmed only after we reply to you.**
 - Starter admin dashboard
 - Order status workflow: New → Accepted → Preparing → Ready → Delivered
+- Fixed checkout script so the online menu always renders correctly
 
 ## GitHub Pages
 Enable **Settings → Pages → Deploy from branch → main** to publish the site.
