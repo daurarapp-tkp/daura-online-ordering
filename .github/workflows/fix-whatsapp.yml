@@ -17,7 +17,10 @@ jobs:
           from pathlib import Path
           p=Path('index.html')
           s=p.read_text()
-          start=s.index('function order(){')
+          marker='function order(){'
+          start=s.rfind('async ',0,s.index(marker))
+          if start < 0:
+              start=s.index(marker)
           end=s.index('\ninit();render();update();',start)
           new='''async function order(){
           if(!cart.length)return alert('Please add food first.');
@@ -56,5 +59,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Improve live order WhatsApp details and confirmation note [skip ci]" || exit 0
+          git commit -m "Fix checkout syntax and preserve menu rendering [skip ci]" || exit 0
           git push
