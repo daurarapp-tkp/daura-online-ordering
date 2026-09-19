@@ -1,0 +1,52 @@
+name: Fix online order Supabase config
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  patch-order:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Patch order integration
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+
+          if 'src="supabase-config.js"' not in s:
+              s = s.replace('<script>\nconst M=', '<script src="supabase-config.js"></script>\n<script>\nconst M=', 1)
+
+          s = s.replace(
+              "const SUPABASE_URL='https://xcmyieefdpaaipngphym.supabase.co';\n  const SUPABASE_ANON_KEY='PASTE_YOUR_SUPABASE_ANON_KEY_HERE';",
+              "const SUPABASE_URL=window.DAURA_SUPABASE_URL;\n  const SUPABASE_ANON_KEY=window.DAURA_SUPABASE_KEY;",
+              1
+          )
+
+          s = s.replace(
+              "alert('Order could not be saved. Please check Supabase orders table/RLS.');",
+              "alert('Order could not be saved. Supabase error: '+result);",
+              1
+          )
+
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit patch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          if git diff --cached --quiet; then
+            echo "No order patch needed."
+            exit 0
+          fi
+          git commit -m "Fix Supabase order submission"
+          git push
