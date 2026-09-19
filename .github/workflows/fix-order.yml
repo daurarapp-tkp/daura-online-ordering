@@ -31,6 +31,18 @@ jobs:
           )
 
           s = s.replace(
+              "    customer_phone:p,\n    order_type:t,",
+              "    customer_phone:p,\n    phone:p,\n    order_type:t,",
+              1
+          )
+
+          s = s.replace(
+              "    total_amount:total,\n    status:'pending'",
+              "    total_amount:total,\n    total:total,\n    status:'pending'",
+              1
+          )
+
+          s = s.replace(
               "alert('Order could not be saved. Please check Supabase orders table/RLS.');",
               "alert('Order could not be saved. Supabase error: '+result);",
               1
@@ -48,5 +60,5 @@ jobs:
             echo "No order patch needed."
             exit 0
           fi
-          git commit -m "Fix Supabase order submission"
+          git commit -m "Keep order columns compatible"
           git push
