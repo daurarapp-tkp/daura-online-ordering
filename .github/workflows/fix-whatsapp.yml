@@ -1,0 +1,40 @@
+name: Fix WhatsApp order message
+on:
+  push:
+    paths:
+      - 'README.md'
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fix WhatsApp message
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('index.html')
+          s=p.read_text()
+          start=s.index('function order(){')
+          end=s.index('\ninit();render();update();',start)
+          new='''function order(){
+          if(!cart.length)return alert('Please add food first.');
+          let n=document.getElementById('name').value.trim(),p=document.getElementById('phone').value.trim();
+          if(!n||!p)return alert('Please enter name and mobile number.');
+          let t=document.getElementById('type').value,a=document.getElementById('address').value.trim(),note=document.getElementById('note').value.trim(),pay=document.querySelector('input[name=pay]:checked').value,total=cart.reduce((s,x)=>s+x.price*x.qty,0);
+          let lines=['DAURA RESTAURANT & PARTY PALACE','NEW ONLINE ORDER',''];
+          cart.forEach(x=>lines.push('• '+x.name+' × '+x.qty+' = Rs. '+rs(x.price*x.qty)));
+          lines.push('','TOTAL: Rs. '+rs(total),'Order Type: '+t,'Payment: '+pay,'Customer Name: '+n,'Mobile: '+p);
+          if(a)lines.push('Address: '+a);
+          if(note)lines.push('Special Instructions: '+note);
+          let message=lines.join('\\n');
+          window.open('https://wa.me/9779744444442?text='+encodeURIComponent(message),'_blank');
+          }'''
+          p.write_text(s[:start]+new+s[end:])
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "Fix WhatsApp complete order details [skip ci]" || exit 0
+          git push
