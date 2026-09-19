@@ -35,18 +35,88 @@ function update(){document.getElementById('count').textContent=cart.reduce((a,x)
 function change(name,d){let x=cart.find(i=>i.name==name);if(x){x.qty+=d;if(x.qty<1)cart=cart.filter(i=>i!==x)};openCart();update()}
 function openCart(){document.getElementById('modal').style.display='block';document.getElementById('lines').innerHTML=cart.length?cart.map(x=>`<div class="line"><span>${x.name}<br><small>Rs. ${rs(x.price)} × ${x.qty}</small></span><span class="qty"><button onclick="change('${x.name.replaceAll("'","\\'")}',-1)">−</button> ${x.qty} <button onclick="change('${x.name.replaceAll("'","\\'")}',1)">+</button></span></div>`).join(''):'<p>Your cart is empty.</p>';document.getElementById('total').textContent=rs(cart.reduce((a,x)=>a+x.price*x.qty,0))}
 function closeCart(){document.getElementById('modal').style.display='none'}
-function order(){
-if(!cart.length)return alert('Please add food first.');
-let n=document.getElementById('name').value.trim(),p=document.getElementById('phone').value.trim();
-if(!n||!p)return alert('Please enter name and mobile number.');
-let t=document.getElementById('type').value,a=document.getElementById('address').value.trim(),note=document.getElementById('note').value.trim(),pay=document.querySelector('input[name=pay]:checked').value,total=cart.reduce((s,x)=>s+x.price*x.qty,0);
-let lines=['DAURA RESTAURANT & PARTY PALACE','NEW ONLINE ORDER',''];
-cart.forEach(x=>lines.push('• '+x.name+' × '+x.qty+' = Rs. '+rs(x.price*x.qty)));
-lines.push('','TOTAL: Rs. '+rs(total),'Order Type: '+t,'Payment: '+pay,'Customer Name: '+n,'Mobile: '+p);
-if(a)lines.push('Address: '+a);
-if(note)lines.push('Special Instructions: '+note);
-let message=lines.join('\n');
-window.open('https://wa.me/9779744444442?text='+encodeURIComponent(message),'_blank');
+async function order(){
+  if(!cart.length)return alert('Please add food first.');
+
+  const n=document.getElementById('name').value.trim();
+  const p=document.getElementById('phone').value.trim();
+  if(!n||!p)return alert('Please enter name and mobile number.');
+
+  const t=document.getElementById('type').value;
+  const a=document.getElementById('address').value.trim();
+  const note=document.getElementById('note').value.trim();
+  const pay=document.querySelector('input[name=pay]:checked').value;
+  const total=cart.reduce((s,x)=>s+x.price*x.qty,0);
+
+  const items=cart.map(x=>({
+    name:x.name,
+    price:Number(x.price),
+    quantity:Number(x.qty),
+    subtotal:Number(x.price*x.qty)
+  }));
+
+  const orderData={
+    customer_name:n,
+    customer_phone:p,
+    order_type:t,
+    address:a||null,
+    payment_method:pay,
+    special_instructions:note||null,
+    items:items,
+    total_amount:total,
+    status:'pending'
+  };
+
+  const SUPABASE_URL='https://xcmyieefdpaaipngphym.supabase.co';
+  const SUPABASE_ANON_KEY='PASTE_YOUR_SUPABASE_ANON_KEY_HERE';
+
+  try{
+    const response=await fetch(SUPABASE_URL+'/rest/v1/orders',{
+      method:'POST',
+      headers:{
+        'apikey':SUPABASE_ANON_KEY,
+        'Authorization':'Bearer '+SUPABASE_ANON_KEY,
+        'Content-Type':'application/json',
+        'Prefer':'return=representation'
+      },
+      body:JSON.stringify(orderData)
+    });
+
+    const result=await response.text();
+    if(!response.ok){
+      console.error('Supabase order error:',result);
+      alert('Order could not be saved. Please check Supabase orders table/RLS.');
+      return;
+    }
+
+    const lines=[
+      'DAURA RESTAURANT & PARTY PALACE',
+      '',
+      '🛒 NEW ONLINE ORDER',
+      '━━━━━━━━━━━━━━━━',
+      ...cart.map(x=>'🍽️ '+x.name+' × '+x.qty+' = Rs. '+rs(x.price*x.qty)),
+      '━━━━━━━━━━━━━━━━',
+      '💰 TOTAL: Rs. '+rs(total),
+      '',
+      '📦 Order Type: '+t,
+      '💳 Payment: '+pay,
+      '👤 Customer: '+n,
+      '📱 Mobile: '+p
+    ];
+
+    if(a)lines.push('📍 Address: '+a);
+    if(note)lines.push('📝 Instructions: '+note);
+    lines.push('','✅ Order saved to restaurant system');
+
+    window.open(
+      'https://wa.me/9779744444442?text='+encodeURIComponent(lines.join('\n')),
+      '_blank'
+    );
+
+  }catch(error){
+    console.error(error);
+    alert('Connection error. Order was not saved. Please try again.');
+  }
 }
 init();render();update();
 </script></body></html>
