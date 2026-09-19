@@ -16,6 +16,7 @@ WhatsApp order number: **+977 9744444442**
 - Starter admin dashboard
 - Order status workflow: New → Accepted → Preparing → Ready → Delivered
 - Fixed checkout script so the online menu always renders correctly
+- Safe checkout patch prevents duplicate JavaScript async syntax
 
 ## GitHub Pages
 Enable **Settings → Pages → Deploy from branch → main** to publish the site.
