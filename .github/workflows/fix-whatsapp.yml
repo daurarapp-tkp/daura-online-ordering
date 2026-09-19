@@ -43,9 +43,9 @@ jobs:
             let lines=['🍽️ DAURA RESTAURANT & PARTY PALACE','🆕 NEW ONLINE ORDER',orderId?'🧾 Order #'+orderId:''];
             lines.push('');
             items.forEach(x=>lines.push('🍴 '+x.name+' × '+x.quantity+' — Rs. '+rs(x.subtotal)));
-            lines.push('','💰 TOTAL: Rs. '+rs(total),'','👤 Customer: '+n,'📞 Phone: '+phone,'📍 Location: '+(address||'Pickup'),'🚚 Order Type: '+type,'💳 Payment: '+pay);
-            if(note)lines.push('📝 Note: '+note);
-            lines.push('','✅ Order saved in our restaurant system.','⏳ Please wait for a response/reply from our restaurant.','📲 Your order will be confirmed only after we reply to you.');
+            lines.push('','💰 TOTAL: Rs. '+rs(total),'','👤 Customer Name: '+n,'📞 Phone Number: '+phone,'📍 Location: '+(address||'Pickup'),'🚚 Order Type: '+type,'💳 Payment Method: '+pay);
+            if(note)lines.push('📝 Special Note: '+note);
+            lines.push('','🔔 ORDER STATUS NOTE','✅ Your order has been placed and saved in our restaurant system.','⏳ Please wait for a response/reply from our restaurant.','📲 Your order will be confirmed only after we reply to you.');
             const message=lines.filter(x=>x!==undefined).join('\\n');
             window.open('https://wa.me/9779744444442?text='+encodeURIComponent(message),'_blank');
             cart=[];update();closeCart();
@@ -56,5 +56,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Fix live Supabase order save and WhatsApp details [skip ci]" || exit 0
+          git commit -m "Improve live order WhatsApp details and confirmation note [skip ci]" || exit 0
           git push
