@@ -52,10 +52,9 @@ const orderPayload={customer_name:n,phone:phone,order_type:type,address:address|
 const supabaseUrl='https://xcmyieefdpaaipngphym.supabase.co';
 const supabaseKey='sb_publishable_iraP8sepBprMFD2cildkrQ_TTXOqoXq';
 try{
-  const response=await fetch(supabaseUrl+'/rest/v1/orders',{method:'POST',headers:{'apikey':supabaseKey,'Authorization':'Bearer '+supabaseKey,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(orderPayload)});
+  const response=await fetch(supabaseUrl+'/rest/v1/orders',{method:'POST',headers:{'apikey':supabaseKey,'Authorization':'Bearer '+supabaseKey,'Content-Type':'application/json','Accept':'application/json','Prefer':'return=minimal'},body:JSON.stringify(orderPayload)});
   if(!response.ok){const err=await response.text();console.error('Supabase order save failed:',err);return alert('Order could not be saved to the restaurant system. Please try again.');}
-  const saved=await response.json();
-  const orderId=Array.isArray(saved)&&saved[0]?saved[0].id:null;
+  const orderId=null;
   let lines=['🍽️ DAURA RESTAURANT & PARTY PALACE','🆕 NEW ONLINE ORDER',orderId?'🧾 Order #'+orderId:''];
   lines.push('');
   items.forEach(x=>lines.push('🍴 '+x.name+' × '+x.quantity+' — Rs. '+rs(x.subtotal)));
