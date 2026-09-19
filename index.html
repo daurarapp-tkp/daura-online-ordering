@@ -59,12 +59,14 @@ async function order(){
   const orderData={
     customer_name:n,
     customer_phone:p,
+    phone:p,
     order_type:t,
     address:a||null,
     payment_method:pay,
     special_instructions:note||null,
     items:items,
     total_amount:total,
+    total:total,
     status:'pending'
   };
 
