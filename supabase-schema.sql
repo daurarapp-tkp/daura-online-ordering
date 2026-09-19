@@ -16,21 +16,22 @@ create table if not exists public.orders (
   status text not null default 'pending'
 );
 
--- If an older orders table already exists, add/rename the columns expected by the app.
+-- If an older orders table already exists, add the columns expected by the app.
 alter table public.orders add column if not exists customer_phone text;
 alter table public.orders add column if not exists total_amount numeric(12,2);
 alter table public.orders add column if not exists status text;
 alter table public.orders add column if not exists special_instructions text;
 
 -- Copy data from the old column names when upgrading an existing table.
--- These statements are guarded by checking whether the legacy columns exist.
 do $$
 begin
   if exists (select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='phone') then
     execute 'update public.orders set customer_phone = phone where customer_phone is null';
+    execute 'alter table public.orders alter column phone drop not null';
   end if;
   if exists (select 1 from information_schema.columns where table_schema='public' and table_name='orders' and column_name='total') then
     execute 'update public.orders set total_amount = total where total_amount is null';
+    execute 'alter table public.orders alter column total drop not null';
   end if;
 end $$;
 
@@ -75,7 +76,6 @@ with check (
   and total_amount >= 0
 );
 
--- Keep admin access available for authenticated admin users.
 create policy "Admins can view orders"
 on public.orders
 for select to authenticated
