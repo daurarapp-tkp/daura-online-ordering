@@ -10,13 +10,11 @@ WhatsApp order number: **+977 9744444442**
 - Mobile-friendly ordering UI
 - Menu categories and search
 - Cart and quantity controls
-- WhatsApp order confirmation
-- Complete WhatsApp order details: items, quantity, price, total, customer, mobile, order type, payment, address and notes
-- WhatsApp message includes all customer/order fields even when optional fields are blank
+- Orders saved directly to the Supabase restaurant system before WhatsApp opens
+- Complete WhatsApp order details with icons: items, quantity, price, total, customer, mobile, order type, payment, address and notes
+- Customer confirmation note: order is saved first and is confirmed only after restaurant reply
 - Starter admin dashboard
 - Order status workflow: New → Accepted → Preparing → Ready → Delivered
 
 ## GitHub Pages
 Enable **Settings → Pages → Deploy from branch → main** to publish the site.
-
-The admin page is a browser-local starter panel. WhatsApp messages are not automatically synchronized into it. A true multi-device live dashboard requires a backend/database and secure authentication.
