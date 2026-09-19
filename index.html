@@ -48,7 +48,7 @@ if(!n||!phone)return alert('Please enter customer name and mobile number.');
 if(type==='Delivery'&&!address)return alert('Please enter delivery address.');
 const items=cart.map(x=>({name:x.name,price:Number(x.price)||0,quantity:Number(x.qty)||1,subtotal:(Number(x.price)||0)*(Number(x.qty)||1)}));
 const total=items.reduce((sum,x)=>sum+x.subtotal,0);
-const orderPayload={customer_name:n,customer_phone:phone,order_type:type,address:address||null,payment_method:pay,items,total_amount:total,special_instructions:note||null,status:'New'};
+const orderPayload={customer_name:n,phone:phone,order_type:type,address:address||null,payment_method:pay,items,total:total,special_instructions:note||null,status:'New'};
 const supabaseUrl='https://xcmyieefdpaaipngphym.supabase.co';
 const supabaseKey='sb_publishable_iraP8sepBprMFD2cildkrQ_TTXOqoXq';
 try{
