@@ -1,8 +1,9 @@
-name: Fix WhatsApp order message
+name: Fix live order checkout
 on:
   push:
     paths:
       - 'README.md'
+      - 'index.html'
 permissions:
   contents: write
 jobs:
@@ -10,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Fix WhatsApp message
+      - name: Patch checkout order function
         run: |
           python3 - <<'PY'
           from pathlib import Path
@@ -18,23 +19,42 @@ jobs:
           s=p.read_text()
           start=s.index('function order(){')
           end=s.index('\ninit();render();update();',start)
-          new='''function order(){
+          new='''async function order(){
           if(!cart.length)return alert('Please add food first.');
-          let n=document.getElementById('name').value.trim(),p=document.getElementById('phone').value.trim();
-          if(!n||!p)return alert('Please enter name and mobile number.');
-          let t=document.getElementById('type').value,a=document.getElementById('address').value.trim(),note=document.getElementById('note').value.trim(),pay=document.querySelector('input[name=pay]:checked').value,total=cart.reduce((s,x)=>s+x.price*x.qty,0);
-          let lines=['DAURA RESTAURANT & PARTY PALACE','NEW ONLINE ORDER',''];
-          cart.forEach(x=>lines.push('• '+x.name+' × '+x.qty+' = Rs. '+rs(x.price*x.qty)));
-          lines.push('','TOTAL: Rs. '+rs(total),'Order Type: '+t,'Payment: '+pay,'Customer Name: '+n,'Mobile: '+p);
-          if(a)lines.push('Address: '+a);
-          if(note)lines.push('Special Instructions: '+note);
-          let message=lines.join('\\n');
-          window.open('https://wa.me/9779744444442?text='+encodeURIComponent(message),'_blank');
+          const n=document.getElementById('name').value.trim();
+          const phone=document.getElementById('phone').value.trim();
+          const type=document.getElementById('type').value;
+          const address=document.getElementById('address').value.trim();
+          const note=document.getElementById('note').value.trim();
+          const payEl=document.querySelector('input[name=pay]:checked');
+          const pay=payEl?payEl.value:'Cash on Delivery';
+          if(!n||!phone)return alert('Please enter customer name and mobile number.');
+          if(type==='Delivery'&&!address)return alert('Please enter delivery address.');
+          const items=cart.map(x=>({name:x.name,price:Number(x.price)||0,quantity:Number(x.qty)||1,subtotal:(Number(x.price)||0)*(Number(x.qty)||1)}));
+          const total=items.reduce((sum,x)=>sum+x.subtotal,0);
+          const orderPayload={customer_name:n,customer_phone:phone,order_type:type,address:address||null,payment_method:pay,items,total_amount:total,special_instructions:note||null,status:'New'};
+          const supabaseUrl='https://xcmyieefdpaaipngphym.supabase.co';
+          const supabaseKey='sb_publishable_iraP8sepBprMFD2cildkrQ_TTXOqoXq';
+          try{
+            const response=await fetch(supabaseUrl+'/rest/v1/orders',{method:'POST',headers:{'apikey':supabaseKey,'Authorization':'Bearer '+supabaseKey,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(orderPayload)});
+            if(!response.ok){const err=await response.text();console.error('Supabase order save failed:',err);return alert('Order could not be saved to the restaurant system. Please try again.');}
+            const saved=await response.json();
+            const orderId=Array.isArray(saved)&&saved[0]?saved[0].id:null;
+            let lines=['🍽️ DAURA RESTAURANT & PARTY PALACE','🆕 NEW ONLINE ORDER',orderId?'🧾 Order #'+orderId:''];
+            lines.push('');
+            items.forEach(x=>lines.push('🍴 '+x.name+' × '+x.quantity+' — Rs. '+rs(x.subtotal)));
+            lines.push('','💰 TOTAL: Rs. '+rs(total),'','👤 Customer: '+n,'📞 Phone: '+phone,'📍 Location: '+(address||'Pickup'),'🚚 Order Type: '+type,'💳 Payment: '+pay);
+            if(note)lines.push('📝 Note: '+note);
+            lines.push('','✅ Order saved in our restaurant system.','⏳ Please wait for a response/reply from our restaurant.','📲 Your order will be confirmed only after we reply to you.');
+            const message=lines.filter(x=>x!==undefined).join('\\n');
+            window.open('https://wa.me/9779744444442?text='+encodeURIComponent(message),'_blank');
+            cart=[];update();closeCart();
+          }catch(error){console.error(error);alert('Unable to connect to the restaurant system. Please check your internet connection and try again.');}
           }'''
           p.write_text(s[:start]+new+s[end:])
           PY
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "Fix WhatsApp complete order details [skip ci]" || exit 0
+          git commit -m "Fix live Supabase order save and WhatsApp details [skip ci]" || exit 0
           git push
